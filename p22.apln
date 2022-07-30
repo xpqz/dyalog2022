@@ -1,0 +1,73 @@
+:Namespace p22
+    ⍝ https://contest.dyalog.com/?goto=P22
+    
+    ⎕FR ⎕PP ⎕IO←1287 34 1
+    assert←{⍺←'assertion failure' ⋄ 0∊⍵:⍺ ⎕signal 8 ⋄ shy←0}
+
+    reshape ← {
+        data ← ⍵⍴⍨|⍺       ⍝ First do the normal reshape
+        reverse ← 0>,⍺     ⍝ Find the negative axes we need to reverse
+        0=+/reverse: data  ⍝ If we had no negative axes, we're done
+
+        rev ← {            ⍝ reverse along any negated axes
+            ⍬≡⍵: data
+            data ⊢← ⊖[⊃⍵]data ⍝ reverse axis specified by first element in ⍵
+            ∇1↓⍵
+        }
+        rev ⍸reverse
+    }
+
+    ∇ test_reshape
+      assert 1 2 3 4 1 2 3 4 1 2≡⎕←10 reshape ⍳4
+      assert 2 1 4 3 2 1 4 3 2 1≡⎕←¯10 reshape ⍳4
+      assert (4 4⍴'MNOPIJKLEFGHABCD')≡⎕←¯4 4 reshape ⎕A
+      assert (4 4⍴'PONMLKJIHGFEDCBA')≡⎕←¯4 ¯4 reshape ⎕A
+      assert (2 2 3 4⍴(21+⎕io-⍨⍳4),(17+⎕io-⍨⍳4),(13+⎕io-⍨⍳4),(9+⎕io-⍨⍳4),5 6 7 8 1 2 3 4,(45+⎕io-⍨⍳4),(41+⎕io-⍨⍳4),(37+⎕io-⍨⍳4),(33+⎕io-⍨⍳4),(29+⎕io-⍨⍳4),25+⎕io-⍨⍳4)≡⎕←2 ¯2 ¯3 4  reshape ⍳48
+      assert (2 2⍴'Brian' 'Adam' 'Morten' 'Michael')≡⎕←2 ¯2 reshape'Adam' 'Brian' 'Michael' 'Morten'
+      assert 5=⎕←⍬ reshape 5 3 1
+    ∇
+
+    ∇ r ← dims reshape2 data;fill;k;idx
+      fill ← (⊢≠⌊)dims                    ⍝ Find the greedy filler, if present
+      :If 0=∨⌿fill                        ⍝ If no greedy filler, we're doing the above `reshape`
+        r ← dims reshape data
+        :Return
+      :EndIf
+
+      :If 2<+⌿fill                        ⍝ We only allow one greedy filler
+        ⎕SIGNAL 11                        ⍝ Raise a DOMAIN ERROR                
+      :EndIf
+
+      idx ← ⊃⍸fill
+      k ← idx⊃dims
+
+      :If ~0.5 1.5 2.5∊⍨|k                ⍝ Make sure only allowed special values
+        ⎕SIGNAL 11                        ⍝ Raise a DOMAIN ERROR
+      :EndIf
+
+      dims[idx] ← ⌊(≢data)÷×/|dims/⍨~fill ⍝ Work out the magnitude of the greedy fill
+
+      :If 1.5 2.5∊⍨|k                     ⍝ For the pad and repeat, we may need to extend 
+      :AndIf (×/|dims)≠≢data              ⍝  the result shape, unless we have a perfect fit
+        dims[idx] +← 1
+      :AndIf 2.5=|k
+        data ← data↑⍨×/|dims              ⍝ Pad data with prototype value
+      :EndIf
+      dims[idx] ×← ×k                     ⍝ Maintain sign for any rotations by reshape
+
+      r ← dims reshape data
+    ∇
+
+    ∇ test_reshape2
+      assert (2 4⍴1+⎕io-⍨⍳8)≡⎕←0.5 4 reshape2 ⍳10        ⍝ 0.5 truncates the data
+      assert (4 2⍴1+⎕io-⍨⍳8)≡⎕←4 0.5 reshape2 ⍳10
+      assert (3 4⍴(1+⎕io-⍨⍳10),1 2)≡⎕←1.5 4 reshape2 ⍳10 ⍝ 1.5 repeats the data
+      assert (3 4⍴(1+⎕io-⍨⍳10),0 0)≡⎕←2.5 4 reshape2 ⍳10 ⍝ 2.5 pads the data
+      assert (4 4⍴'   MLKJIHGFEDCBA')≡⎕←¯4 ¯2.5 reshape2 13↑⎕A ⍝ 4 rows with padding and the rows and columns reversed
+      assert (3 2⍴'     ' '     ' 'michael' 'morten' 'adam' 'brian')≡⎕←¯3 ¯2.5 reshape2 'brian' 'adam' 'morten' 'michael'
+      assert (⊂'brian')≡⎕←⍬ reshape2 'brian' 'adam' 'morten' 'micheal' ⍝ result is a scalar
+      assert (2 3 4⍴(1+⎕io-⍨⍳21),3/0)≡⎕←2.5 3 4 reshape2 ⍳21 ⍝ 3 axes
+      assert (2 2 3 4⍴(1+⎕io-⍨⍳26),22/0)≡⎕←2 2.5 3 4 reshape2 ⍳26 ⍝ 4 axes
+      assert (2 2 3 4⍴0 0 26 25,(20/0),4 3 2 1 8 7 6 5 12 11 10 9 16 15 14 13 20 19 18 17 24 23 22 21)≡⎕←¯2 2.5 3 ¯4 reshape2 ⍳26 ⍝ 4 axes with reversal
+    ∇
+:EndNamespace

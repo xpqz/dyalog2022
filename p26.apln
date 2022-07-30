@@ -1,0 +1,129 @@
+:Namespace p26
+    ⍝ https://contest.dyalog.com/?goto=P26
+  
+    ⎕FR ⎕PP ⎕IO←1287 34 1 
+    assert←{⍺←'assertion failure' ⋄ 0∊⍵:⍺ ⎕signal 8 ⋄ shy←0}
+
+    DDN ← {
+        days ← 'mon' 'tue' 'wed' 'thu' 'fri' 'sat' 'sun'
+        months ← 'jan' 'feb' 'mar' 'apr' 'may' 'jun' 'jul' 'aug' 'sep' 'oct' 'nov' 'dec'
+        
+        Partition ← {
+            split ← ~⍤∊⍨⊆⊢
+            sep ← ∪⍺~'YWMDPOdhmstpwo_' 
+            spec ← sep split ⍺
+            fields ← sep split ⍵
+            spec fields
+        }
+
+        (spec data) ← ⍺ Partition ⍵ ⍝ Split pattern and string on separator chars
+
+        _GetItem_ ← {
+            is ← ⍺⍺(⍺⍺,⍺⍺)('_',⍺⍺)∘.≡⍺
+            ∨⌿,is: ⍎⊃⍵⌿⍨∨⌿is⋄⍵⍵
+        }
+        
+        _GetYear_ ← { 
+            ⍝ 4-, or 2-digit year. ⍺⍺ is the pattern to look for. This is 
+            ⍝ a dop, as there are two different year patterns:
+            ⍝
+            ⍝    YYYY YY   -- "normal" year, 4 or 2 digits
+            ⍝    WWWW WW   -- ISO-Week year
+            ⍝
+            ⍝ ⍵⍵ is the default we like to return if there is no year to be
+            ⍝ found.
+            ys ← ⍺⍺∘.≡⍺
+            d ← ⍵⌿⍨∨⌿ys
+            ⊃∨/ys: ⍎⊃d        ⍝ 4-digit year
+            ⊃⊖∨/ys: 2000+⍎⊃d  ⍝ 2-digit year
+            ⍵⍵                ⍝ Not found; return default
+        }
+        
+        GetMonth ← {
+            ms ← 'M' 'MM' '_M'∘.≡⍺ ⍝ Numeric month
+            ∨⌿,ms: ⍎⊃⍵⌿⍨∨⌿ms
+            ams ← 'Mmm' 'MMM'∘.≡⍺  ⍝ Abbreviated month name
+            ∨⌿,ams: ⊃months⍳⊂⎕C⊃⍵⌿⍨∨⌿ams
+            fms ← 'MMMM' 'Mmmm' 'mmmm' '_mmm'∘.≡spec  ⍝ Full month name
+            ∨⌿,fms: ⊃months⍳⊂3↑⎕C⊃⍵⌿⍨∨⌿fms
+            1 ⍝ Arbitrary default month: jan
+        }
+        
+        WeekDateToDDN ← {
+            ⍝ ISO "week date" to Dyalog Date Number. 
+            ⍝ See https://en.wikipedia.org/wiki/ISO_week_date
+            ⍝ If the day of week wasn't given, it is passed as ¯1,
+            ⍝ in which case we default to 1.
+            (year week day h m s) ← ⍵
+            jan4 ← days⍳⊂'ddd'(1200⌶)1⎕DT⊂year 1 4
+            days_in_year ← (1⎕DT⊂year 12 31)-1⎕DT⊂year 1 1
+            ordinal ← (((1⌈day)+week×7)-3+jan4)-days_in_year 
+            ordinal>0: ¯1+ordinal+1⎕DT⊂(1+year) 1 1 h m s
+            days_in_year+ordinal+1⎕DT⊂year 1 1 h m s
+        }
+        
+        Get12h ← { ⍝ Hours specified in 12-h clock + am/pm
+            ths ← (,'t' 'tt' '_t'∘.,'pp' 'p')∘.≡⎕C⍺
+            ~∨⌿,ths: ¯1
+            f ← ⎕C⊃⍵⌿⍨∨⌿ths
+            'p'=⊃f~dig ← f⌿⍨f∊⎕D: 12+⍎dig
+            ⍎dig
+        }
+        
+        GetDay ← { ⍝ Day-of-week, either as a number 1-7, or long/short name
+            d ← (⊂,'d')≡¨⍺ ⍝ Day number 1-7
+            ∨⌿d: ⍎⍵⊃⍨⍸d
+            dns ← 'dddd' '_ddd' 'ddd' '_dd'∘.≡⎕C⍺ ⍝ Day name, long or short
+            ∨⌿,dns: days⍳⊂⎕C 3↑⊃⍵⌿⍨∨⌿dns
+            ¯1
+        }
+        
+        GetHours ← { ⍝ Hours, either in 12h or 24h
+            'p'∊⎕C∊⍺: ⍺ Get12h ⍵
+            ⍺('h' _GetItem_ 1)⍵
+        }
+        
+        FindWeekDay ← { ⍝ Search forward for a particular day in the week
+            wday ← ⍺⊃days
+            {1+@3⊢⍵}⍣{wday≡⊃'ddd'(1200⌶)1⎕DT⊂⍺}⊢⍵
+        }
+
+        year ← spec ('YYYY' 'YY' _GetYear_ 2022) data
+        month ← spec GetMonth data
+        date ← spec ('D' _GetItem_ ¯1) data
+
+        hours ← spec GetHours data
+        mins ← spec ('m' _GetItem_ 0) data
+        secs ← spec ('s' _GetItem_ 0) data
+
+        ⍝ If we have a fully specified date, we're on the happy path.
+        ¯1≠date: 1⎕DT ⊂year month date hours mins secs
+
+        wday ← spec GetDay data
+
+        ⍝ Maybe we have a so-called "ISO week date" horror show?
+        ISOy ← spec ('WWWW' 'WW' _GetYear_ 2022) data
+        ISOw ← spec ('w' _GetItem_ ¯1) data
+        ¯1≠ISOw: WeekDateToDDN ISOy ISOw wday hours mins secs
+
+        ⍝ We don't have a day-in-month, no ISO week, but we may have a day-in-week?
+        ¯1=wday: 1⎕DT ⊂year month 1 hours mins secs ⍝ Nope, pick the first
+
+        ⍝ Final combo(?): no ISO week, but a day-in-week. Search for the right one, starting
+        ⍝ with the first of the month
+        1⎕DT⊂wday FindWeekDay year month 1 hours mins secs
+    }
+
+    ∇ test_DDN ;pattern;string
+      pattern←'Ddd, DD-Mmm-YYYY hh:mm:ss' ⋄ string←'Thu, 17-Feb-2022 15:10:07'
+      assert string ≡⎕← ⊃pattern (1200⌶) pattern DDN string
+      pattern←'MM/DD/YY tP:mm' ⋄ string←'02/17/22 3P:39'
+      assert string ≡⎕← ⊃pattern (1200⌶) pattern DDN string
+      pattern←'Dddd' ⋄ string←'Thursday'
+      assert string ≡⎕← ⊃pattern (1200⌶) pattern DDN string
+      pattern←'Mmmm Dddd' ⋄ string←'July Thursday'
+      assert string ≡⎕← ⊃pattern (1200⌶) pattern DDN string
+      pattern←'WWWW/ww/d' ⋄ string←'1976/53/6'
+      assert string ≡⎕← ⊃pattern (1200⌶) pattern DDN string
+    ∇
+:EndNamespace

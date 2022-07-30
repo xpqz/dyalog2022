@@ -1,0 +1,12 @@
+:Namespace phase1
+    p1←+/'ACGT'∘.=,                        ⍝ https://contest.dyalog.com/?goto=P11
+    p2←+.≠                                 ⍝ https://contest.dyalog.com/?goto=P12
+    p3←(∪~∩)⍥,                             ⍝ https://contest.dyalog.com/?goto=P13
+    p4←{≢⍉↑⊆⍨,⍵}                           ⍝ https://contest.dyalog.com/?goto=P14
+    p5←{⊖⍤1⊢↑⍴∘'⎕'¨⍳⍵}                     ⍝ https://contest.dyalog.com/?goto=P15
+    p6←{f←⊢⍪1↓⊖⋄f⍉f⍵{⍵+(∘.<⍨⍳⍺)×⍉⍵}↑⍳¨⍳⍵}  ⍝ https://contest.dyalog.com/?goto=P16
+    p7←{(+/m)/f÷⍥(+/)m←0≠f←⊢⌸,⍵}           ⍝ https://contest.dyalog.com/?goto=P17
+    p8←{(¯1+⌊/⍺⍳⍨,⍵)(↑,⍥⊂↓),⍵}             ⍝ https://contest.dyalog.com/?goto=P18
+    p9←{(1+2×⍺)(+⌿÷⊣)(⍺⍴⊃⍵),⍵,⍺⍴⊃⊖⍵}       ⍝ https://contest.dyalog.com/?goto=P19
+    p10←{⊖∊⍺(1↓∘,,⍤0)((≢⍵)⍴1 0 0)⊂⊖⍵}      ⍝ https://contest.dyalog.com/?goto=P110
+:EndNamespace

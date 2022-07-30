@@ -1,0 +1,66 @@
+:Namespace p24
+    ⍝ https://contest.dyalog.com/?goto=P24
+  
+    ⎕FR ⎕PP ⎕IO←1287 34 1
+    assert←{⍺←'assertion failure' ⋄ 0∊⍵:⍺ ⎕signal 8 ⋄ shy←0}
+
+    Ballot ← {
+        mag ← |⍺
+        ⍺≥0: {⍺,⍨≢⍵}⌸mag?¨⍵⍴mag                   ⍝ Must rank all
+        {⍺,⍨≢⍵}⌸{r[c?mag]←⍳c←?mag⊣r←mag/0⋄r}¨⍵⍴1  ⍝ Rank at least one
+    }
+
+    ∇ test_Ballot ;b;b2
+      b ← 3 Ballot 150 ⍝ generate 150 voter rankings for 3 candidates
+      ⎕←('#',b[;1]),'Bob' 'Mary' 'Larry' ⍪↑b[;2]
+
+      b2 ← ¯3 Ballot 150
+      ⎕←('#',b2[;1]),'Bob' 'Mary' 'Larry' ⍪↑b2[;2]
+    ∇
+
+    IRV ← {
+        I ← ⌷⍨∘⊃⍨⍤0 99                        ⍝ Sane indexing
+        res ← ⍬
+
+        Round ← {
+            sc ← (⊣/⍵)+.×1=1↓⍤1↑,/⍵           ⍝ Tot up scores for 1st choices
+            res ,← ⊂(0≠sc)⌿⍉↑(⍳≢sc) sc        ⍝ Record round, excluding any candidates at 0        
+            (⌈/sc)≥2÷⍨+⌿sc: ⍵                 ⍝ Check if we have a winner (or draw)
+            
+            hist ← {⍵[⍋⍵[;1];]}{⍺,⊂⍵}⌸sc      ⍝ Key the scores, sort table asc
+            elim ← 1↓∊1↑hist⌿⍨0≠hist[;1]      ⍝ Eliminate first non-zero score
+
+            prefs ← ↑⍵[;2]
+            prefs[⍸∨/⍉(,elim)I⍉prefs=1;] -← 1 ⍝ Xth choice => (X-1)th choice
+            prefs[;elim] ← 0                  ⍝ Remove eliminated candidates
+            ⍉↑(⊣/⍵)(↓0⌈prefs)                 ⍝ Lower cap at 0
+        }
+
+        _ ← Round⍣≡⍵                          ⍝ Run the simulation
+
+        last ← ⊃⊖res                          ⍝ Pick the winner(s)
+        sc ← last[;2]
+        best ← ⊃⍒sc
+
+        (2÷⍨+⌿sc)<best⊃sc: res,last[best;1]   ⍝ Single candidate on more than half the votes
+        res                                   ⍝   ..otherwise we have a draw
+    }
+
+    ∇ test_IRV_small ;b;v;p
+      b ← (⍪22 25 31 19 33 20),(3 1 2) (2 1 3) (3 2 1) (1 3 2) (2 3 1) (1 2 3)
+      ⎕←IRV b
+
+      b ← 300 200 100 50 50 100,⍪↓6 4⍴1 0 2 0 0 1 0 2 2 0 0 1 0 2 1 0 0 2 0 1 3 2 1 0
+      ⎕←IRV b ⍝ Draw
+
+      v←10 11 10 9 13 14 12 16 21 6 6 8 6 4 4
+      p←(15 3⍴1 2 3 2 1 0 2 1 3 1 3 2 0 1 2 0 0 1 3 1 2 1 0,(2/0),1 0 1 2 0 2 0 1 3 2 1 0 2 1 1 0 2 2 3 1)
+      b←v{⍺,⊂⍵}⍤0 1⊢p
+      ⎕←IRV b
+    ∇
+
+    ∇ test_IRV_big
+      IRV ¯10 Ballot 200000
+    ∇
+
+:EndNamespace

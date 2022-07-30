@@ -1,0 +1,42 @@
+:Namespace p25
+    ⍝ https://contest.dyalog.com/?goto=P25
+  
+    ⎕FR ⎕PP ⎕IO←1287 34 1 
+    assert←{⍺←'assertion failure' ⋄ 0∊⍵:⍺ ⎕signal 8 ⋄ shy←0}
+
+    Original ← ⎕UCS 32+⍳85
+    Z85 ← '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.-:+=^!/*?&<>()[]{}@%$#'
+
+    Base85 ← { ⎕IO←0
+        Encode ← {
+            lpad ← 4×⌈4÷⍨≢⍵                     ⍝ Pad to length divisible by 4
+            data ← lpad↑⍵ 
+            tuples ← (4÷⍨≢data) 4⍴data          ⍝ Line up groups of 4
+            i32 ← {2⊥∊⍉(8/2)⊤⍵}⍤1⊢tuples        ⍝ Convert to binary, combine and back to decimal
+            b85 ← ,⍉(5/85)⊤i32                  ⍝ Convert to base 85, which indexes into the encoding set
+            ⍺[(-lpad-≢⍵)↓,b85]                  ⍝ Drop the padding, if any
+        }
+        
+        Decode ← {                    
+            data ← ⍵/⍨⍵∊⍺                       ⍝ Skip data not in the encoding set
+            pad ← 5×⌈5÷⍨≢data                   ⍝ pad to length divisible by 5
+            idx ← ⍺⍳pad↑data,5/⊃⊖⍺              ⍝ Pad with the last char of encoding set
+            tuples ← (5÷⍨≢idx) 5⍴idx            ⍝ Line up groups of 5
+            i32 ← 85⊥⍤1⊢tuples                  ⍝ Base 85 decode
+            (-pad-≢data)↓∊{2⊥⍉4 8⍴(32/2)⊤⍵}¨i32 ⍝ Decode each byte and drop any padding
+        }
+
+        (⍕≡⊢)⍵: ⍺ Decode ⍵
+        ⍺ Encode ⍵
+    }
+
+    ∇ test_Base85
+      assert '87cURD]i,"Ebo7'≡⎕←Original Base85 ⎕UCS 'Hello World'
+      assert 'nm=QNzY&b1A+]m'≡⎕←Z85 Base85 ⎕UCS 'Hello World'
+      assert '!!!!!!!!'≡⎕←Original Base85 0 0 0 0 0 0
+      assert 0 0 0 0 0 0≡Original Base85 8⍴'!'
+      assert 1=Z85 (Base85⍣2 ≡ ⊢) ⎕UCS 'Hello'
+      assert 'Dyalog APL'≡⎕←⎕UCS Original Base85 '7!W 3WD ⍴ eC1 ⌈ Y:eU'
+    ∇
+
+:EndNamespace

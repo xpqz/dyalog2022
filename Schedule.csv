@@ -1,0 +1,49 @@
+﻿Session,Title,Start Time,End Time
+2020-D01,Welcome to Dyalog '20,11/9/2020 14:00,11/9/2020 14:15
+2020-D02,The Road Ahead,11/9/2020 14:15,11/9/2020 15:00
+2020-break-1,break,11/9/2020 15:00,11/9/2020 15:15
+2020-D03,Multi-line Input and Scripting,11/9/2020 15:15,11/9/2020 15:45
+2020-D04,The .NET Core Bridge,11/9/2020 15:45,11/9/2020 16:15
+2020-break-2,break,11/9/2020 16:15,11/9/2020 16:30
+2020-D05,Time Travel Debugging and Statistical Distributions,11/9/2020 16:30,11/9/2020 16:55
+2020-D06,Reworking Mastering Dyalog APL,11/9/2020 16:55,11/9/2020 17:15
+2020-break-3,break,11/9/2020 17:15,11/9/2020 17:30
+2020-D07,Rational Arithmetic,11/9/2020 17:30,11/9/2020 18:00
+2020-break-4,break,11/9/2020 18:00,11/9/2020 18:10
+2020-discussion-1,Open Discussion,11/9/2020 18:10,11/9/2020 19:00
+2020-D08,Dyalog's Docker Containers,11/10/2020 14:00,11/10/2020 14:45
+2020-D09,Array Notation RC1,11/10/2020 14:45,11/10/2020 15:15
+2020-break-5,break,11/10/2020 15:15,11/10/2020 15:30
+2020-U01a,How I Won the APL Problem Solving Competition - Introduction,11/10/2020 15:30,11/10/2020 15:40
+2020-U01b,How I Won the APL Problem Solving Competition,11/10/2020 15:40,11/10/2020 16:15
+2020-break-6,break,11/10/2020 16:15,11/10/2020 16:30
+2020-U02,Building Applications using qWC (⎕WC) on the Web,11/10/2020 16:30,11/10/2020 17:00
+2020-U03,Tracing Hanneke Vrome Numerically,11/10/2020 17:00,11/10/2020 17:30
+2020-break-7,break,11/10/2020 17:30,11/10/2020 17:45
+2020-D10,APL Online!,11/10/2020 17:45,11/10/2020 18:00
+2020-closing,Closing session,11/10/2020 18:00,11/10/2020 18:05
+2021-D01,Welcome to Dyalog '21,11/8/2021 14:00,11/8/2021 14:15
+2021-D02,The Road Ahead,11/8/2021 14:15,11/8/2021 14:45
+2021-D03,Scripting in Dyalog v18.2,11/8/2021 14:45,11/8/2021 15:15
+2021-break-1,break,11/8/2021 15:15,11/8/2021 15:30
+2021-U01,"Here's The Plan: Learn APL, and Write a Book About It",11/8/2021 15:30,11/8/2021 16:00
+2021-U02,APL in the Driver's Seat,11/8/2021 16:00,11/8/2021 16:30
+2021-break-2,break,11/8/2021 16:30,11/8/2021 16:45
+2021-D04,Support for Statistical Distributions in Dyalog v18.2,11/8/2021 16:45,11/8/2021 17:05
+2021-U03,Extending the Domain of the Probability Operator in TamStat,11/8/2021 17:05,11/8/2021 17:35
+2021-break-3,break,11/8/2021 17:35,11/8/2021 17:45
+2021-D05,⎕JSON Table Support,11/8/2021 17:45,11/8/2021 18:15
+2021-D06,Highlights of Dyalog v18.2,11/8/2021 18:15,11/8/2021 18:45
+2021-discussion,Open Discussion,11/8/2021 18:45,11/8/2021 18:50
+2021-D07,Link v3.0,11/9/2021 14:00,11/9/2021 14:30
+2021-D08,Dado (Dyalog APL Development Operations),11/9/2021 14:30,11/9/2021 15:00
+2021-break-5,break,11/9/2021 15:00,11/9/2021 15:15
+2021-U04a,The 2021 APL Problem Solving Competition - Introduction,11/9/2021 15:15,11/9/2021 15:25
+2021-U04b,The 2021 APL Problem Solving Competition - Runner-Up's Presentation,11/9/2021 15:25,11/9/2021 16:00
+2021-break-6,break,11/9/2021 16:00,11/9/2021 16:15
+2021-D09,Python + APL = Py'n'APL,11/9/2021 16:15,11/9/2021 16:45
+2021-D10,Packaging Dyalog Tools,11/9/2021 16:45,11/9/2021 17:15
+2021-break-7,break,11/9/2021 17:15,11/9/2021 17:30
+2021-D11,APL Media Update 2021,11/9/2021 17:30,11/9/2021 18:00
+2021-U05,The Array Cast (live podcast recording),11/9/2021 18:00,11/9/2021 18:45
+2021-closing,Closing session and open discussion,11/9/2021 18:45,11/9/2021 18:50

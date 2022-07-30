@@ -1,0 +1,72 @@
+:Namespace p23
+    ⍝ https://contest.dyalog.com/?goto=P23
+  
+    ⎕FR ⎕PP ⎕IO←1287 34 1
+    assert←{⍺←'assertion failure' ⋄ 0∊⍵:⍺ ⎕signal 8 ⋄ shy←0}
+
+    ⍝ helpers
+    Range ← {⍺,⍺+⍳⍵-⍺} ⍝ Inclusive range [⍺, ⍵]
+    Parsedate ← {60÷⍨{20⎕DT⊂⍵[3 2 1 4 5↑⍨≢⍵]}¨(⌿/↑' /:'∘⎕VFI¨,⍵)} ⍝ Convert string datetime(s) to epoch mins
+    Fixdates ← {
+        data ← ⍵
+        data[dashes] ← data[(⊣/↑dashes←⍸data∊⊂'--'),¨4]   ⍝ Replace '--' with col 4 value
+        (name join leave _) ← ⊂[1]data                    
+        {⍵[⍋⍵;]}⍉↑name (Parsedate join) (Parsedate leave) ⍝ Sort
+    }
+
+    Attended ← {
+        (name join leave) ← ⊂[1]Fixdates ⍺
+        groups ← 1,2≢/name                                 ⍝ Partition entries by attendee name
+        join ← groups⊂join
+        leave ← groups⊂leave
+        (_ _ start end) ← ⊂[1]⍵                            
+        minutes_attended ← {∊(⊃Range/)¨↓⍉↑⍵}¨↓⍉↑join leave ⍝ Expand [join, leave] ranges
+        sessions ← ⊃¨Range/¨↓⍉↑Parsedate¨start end         ⍝ Convert datetimes and expand [start, end] ranges
+        ⍉sessions∘.{(≢⍺~⍵)<2÷⍨≢⍺}minutes_attended          ⍝ Missed minutes must be less than half the session 
+    }
+
+    ∇ test_Attended ;attendees;schedule;map
+      attendees ← ⊃⎕CSV 'Attendees.csv' '' ⍬ 1
+      schedule ← ⊃⎕CSV 'Schedule.csv' '' ⍬ 1
+      map ← attendees Attended schedule
+      assert ⎕←(⎕JSON ⊃⎕NGET 'sessionTotals.json')≡+⌿map
+      assert ⎕←(⎕JSON ⊃⎕NGET 'attendeeTotals.json')≡+/map
+    ∇
+
+    ShowedUp ← { ⍝ result ← attendees ShowedUp schedule
+        sess_date ← (↑(//)↑' /:'∘⎕VFI¨⊢/⍵)[;3 2 1]
+        by_year ← 1,2≠/⊣/sess_date
+        ysch ← ↑¨by_year⊂↓⍵ 
+        yatt ← ↑¨(1,2≢/¯2↑¨⊢/⍺)⊂↓⍺ 
+        saby ← ⊃¨Attended/¨↓⍉↑yatt ysch               ⍝ Calculate session attendence by year
+        registered ← ⊣/¨⍴¨saby
+        d1s ← ⊣/(+/by_year) 2⍴≢¨(1,2≢/↓sess_date)⊂⍳≢⍵ ⍝ Find the number of sessions for the first day, by year.
+        showed ← ↑⊃¨{+⌿∨/¨⍺(⊂⍤↑,⊂⍤↓)⍤1⊢⍵}/¨↓⍉↑d1s saby
+        noshows ← {+/0=+/⍵}¨saby                      ⍝ Registered users that missed all sessions on both days
+        (⍪sess_date[⍸by_year;1]),(⍪registered),showed,⍪noshows
+    }
+
+    
+    ∇ test_ShowedUp ;attendees;schedule
+      attendees ← ⊃⎕CSV 'Attendees.csv' '' ⍬ 1
+      schedule ← ⊃⎕CSV 'Schedule.csv' '' ⍬ 1
+      assert (2 5⍴2020 298 205 184 78 2021 238 166 149 54)≡⎕←attendees ShowedUp schedule
+    ∇
+
+    Popular ← {
+        year ← (↑(//)↑' /:'∘⎕VFI¨⊢/⍵)[;3]  ⍝ Session years (slight overkill)
+        sy1 ← ⊃⍸2≠/year                    ⍝ Find the number of sessions for year 1
+        gr1 ← ⍒y1 ← +⌿sy1↑⍤1⊢⍺             ⍝ Session popularity by year.
+        gr2 ← ⍒y2 ← +⌿sy1↓⍤1⊢⍺
+        tab1 ← ⍉↑y1[gr1] (⍵[gr1;2])        ⍝ Pick out the session names and apply ordering
+        tab2 ← ⍉↑y2[gr2] (⍵[(≢y1)+gr2;2])
+        {(~+/⍵∊⊂'break')⌿⍵}¨tab1 tab2      ⍝ Filter out break sessions
+    }
+
+    ∇ test_Popular ;attendees;schedule
+      attendees ← ⊃⎕CSV 'Attendees.csv' '' ⍬ 1
+      schedule ← ⊃⎕CSV 'Schedule.csv' '' ⍬ 1
+      ⍪' '⍪¨(attendees Attended schedule) Popular schedule
+    ∇
+
+:EndNamespace
